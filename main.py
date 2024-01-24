@@ -4,6 +4,7 @@ from app import app, db
 from modles import *   
 from auth import * 
 from views import *
+from admin import *
 
 def create_tables():
     for Model in (Role, User, UserRoles):

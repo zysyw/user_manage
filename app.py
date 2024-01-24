@@ -1,7 +1,9 @@
+import os
 from flask import Flask
 from playhouse.flask_utils import FlaskDB
 from dotenv import load_dotenv
 from flask_babel import Babel
+
 
 # VARIABLE PARAMETERS
 load_dotenv('.env')
