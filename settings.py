@@ -46,3 +46,6 @@ SECURITY_PASSWORD_HASH = "pbkdf2_sha256" # use "pbkdf2_sha256" on Windows machin
 
 ## Localization
 BABEL_DEFAULT_LOCALE = 'zh_CN'
+
+## Flask-Admin settings
+FLASK_ADMIN_SWATCH = 'cerulean'
