@@ -4,10 +4,15 @@ import peewee
 from flask import Flask
 
 import flask_admin as admin
+from flask_admin import BaseView, expose
 from flask_admin.contrib.peewee import ModelView
+from flask_babel import Babel
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '123456790'
+app.config['BABEL_DEFAULT_LOCALE'] = 'zh_CN'
+
+babel = Babel(app)
 
 db = peewee.SqliteDatabase('test.sqlite', check_same_thread=False)
 
@@ -46,7 +51,11 @@ class Post(BaseModel):
     def __str__(self):
         return self.title
 
-
+class MyView(BaseView):
+    @expose('/')
+    def index(self):
+        return 'Hello World!'
+    
 class UserAdmin(ModelView):
     inline_models = (UserInfo,)
 
@@ -87,8 +96,10 @@ if __name__ == '__main__':
 
     admin = admin.Admin(app, name='Example: Peewee')
 
-    admin.add_view(UserAdmin(User))
-    admin.add_view(PostAdmin(Post))
+    admin.add_view(UserAdmin(User, name='用户'))
+    admin.add_view(PostAdmin(Post, name='帖子'))
+    
+    admin.add_view(MyView(name='视图') )
 
     try:
         User.create_table()

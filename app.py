@@ -16,4 +16,4 @@ app.config.from_pyfile('settings.py')
 db = FlaskDB(app)
 
 # Localization
-Babel(app)
+babel = Babel(app)
