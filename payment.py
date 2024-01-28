@@ -9,10 +9,14 @@ from admin import admin
 payment_blueprint = Blueprint('payment', __name__)
 
 class PaymentModelView(ModelView):
-    # 设置payment类的视图格式
-    column_list = ('user', 'payment_date', 'amount', 'validity_period', 'expiry_date')
-    column_labels = dict(user='用户', payment_date='缴费日期', amount='缴费金额', validity_period='有效期限', expiry_date='到期日期')
-    column_filters = (User.username, )
+    # 设置payment类的列表视图格式
+    column_list = ('user', 'payment_date', 'amount', 'validity_period', 'expiry_date', 'status', 'remarks')
+    # 设置编辑和创建表单中显示的字段
+    form_columns = ('user', 'payment_date', 'amount', 'validity_period', 'remarks')
+    
+    column_labels = dict(user='用户', payment_date='缴费日期', amount='缴费金额', validity_period='有效期限', expiry_date='到期日期', status='缴费状态', remarks='备注')
+    column_filters = (User.username, )    
+
     form_ajax_refs = {
         'user': {
             'fields': (User.username, 'email')

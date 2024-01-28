@@ -41,5 +41,5 @@ class Payment(db.Model):
     amount = FloatField() # 缴费金额
     validity_period = IntegerField()  # 有效期限（天）
     expiry_date = DateField()  # 到期日期
-    status = BooleanField()  # 缴费状态，已缴费为True，未缴费为False
+    status = TextField()  # 缴费状态，“当期”、“过期”
     remarks = CharField(null=True)  # 备注，可选  
