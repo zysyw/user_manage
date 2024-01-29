@@ -24,14 +24,14 @@ def create_tables():
             app.security.datastore.create_user(username='test', email="test@me.com", password=hash_password("password"))
             
     with app.app_context():    
-        user_role = Role(name='user')
-        administrator_role = Role(name='administrator')
-        db.session.add(user_role)
-        db.session.add(administrator_role)
-        db.session.commit()
 
-        test_user = user_datastore.create_user(
-            first_name='Admin',
+        # 使用user_datastore.create_role创建user和administrator角色
+        user_role = user_datastore.create_role(name='user')
+        administrator_role = user_datastore.create_role(name='administrator')
+
+        # 设置管理员账号
+        user_datastore.create_user(
+            username='Admin',
             email='admin@example.com',
             password=hash_password('admin'),
             roles=[user_role, administrator_role]
@@ -48,17 +48,16 @@ def create_tables():
             'Ali', 'Mason', 'Mitchell', 'Rose', 'Davis', 'Davies', 'Rodriguez', 'Cox', 'Alexander'
         ]
 
+        # 设置用户账号
         for i in range(len(first_names)):
             tmp_email = first_names[i].lower() + "." + last_names[i].lower() + "@example.com"
             tmp_pass = ''.join(random.choice(string.ascii_lowercase + string.digits) for i in range(10))
             user_datastore.create_user(
-                first_name=first_names[i],
-                last_name=last_names[i],
+                username=first_names[i] + " " + last_names[i],
                 email=tmp_email,
                 password=hash_password(tmp_pass),
                 roles=[user_role, ]
             )
-        db.session.commit()
 
 if __name__ == '__main__':
     create_tables()
