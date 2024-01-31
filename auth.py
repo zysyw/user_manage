@@ -4,10 +4,13 @@ from models import *
 from admin import admin
 from flask_admin import helpers as admin_helpers
 from flask import url_for
+from flask_mail import Mail, Message
 
 user_datastore = PeeweeUserDatastore(db, User, Role, UserRoles)
 security = Security(app, user_datastore) 
 app.security = security
+
+mail = Mail(app)
 
 # define a context processor for merging flask-admin's template context into the
 # flask-security views.
@@ -19,3 +22,11 @@ def security_context_processor():
         h=admin_helpers,
         get_url=url_for
     )
+
+def send_mail():
+    with app.app_context():
+        msg = Message("Hello",
+                      recipients=["recipient@example.com"])
+        msg.body = "This is a test email sent from a Flask app!"
+        mail.send(msg)
+        return "Mail sent!"

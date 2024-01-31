@@ -42,7 +42,12 @@ SECURITY_PASSWORD_HASH = "pbkdf2_sha256" # use "pbkdf2_sha256" on Windows machin
 #SECURITY_FRESHNESS_GRACE_PERIOD = timedelta(minutes=15)
 
 ## Flask Security email Config (# Remove the parameter once in prod)
-#SECURITY_SEND_REGISTER_EMAIL = False
+SECURITY_SEND_REGISTER_EMAIL = True
+MAIL_SERVER = 'smtp.163.com'
+MAIL_PORT = 25
+MAIL_USE_TLS = True
+MAIL_USERNAME = os.environ.get("Mail_Username")
+MAIL_PASSWORD = os.environ.get("Mail_Password")
 
 ## Localization
 BABEL_DEFAULT_LOCALE = 'zh_CN'

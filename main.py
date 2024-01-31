@@ -58,6 +58,8 @@ def create_tables():
                 password=hash_password(tmp_pass),
                 roles=[user_role, ]
             )
+            
+        print(send_mail())
 
 if __name__ == '__main__':
     create_tables()
