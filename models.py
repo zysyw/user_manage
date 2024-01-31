@@ -19,6 +19,10 @@ class User(UserMixin, db.Model):
     active = BooleanField(default=True)
     fs_uniquifier = TextField(null=False)
     confirmed_at = DateTimeField(null=True) # for flask-security, not required
+    @property
+    def roles(self):
+        return (Role.select().join(UserRoles).join(User).where(User.id == self.id))
+
     
     def __str__(self):
         return self.username

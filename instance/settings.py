@@ -32,6 +32,8 @@ DATABASE = {
 
 #Flask Security Log in 
 SECURITY_REGISTERABLE = True
+SECURITY_USERNAME_ENABLE = True
+SECURITY_USERNAME_REQUIRED = True
 SECURITY_PASSWORD_SALT = "some_long_random_text"
 SECURITY_PASSWORD_HASH = "pbkdf2_sha256" # use "pbkdf2_sha256" on Windows machines. 
 #SECURITY_TRACKABLE = True
@@ -42,7 +44,20 @@ SECURITY_PASSWORD_HASH = "pbkdf2_sha256" # use "pbkdf2_sha256" on Windows machin
 #SECURITY_FRESHNESS_GRACE_PERIOD = timedelta(minutes=15)
 
 ## Flask Security email Config (# Remove the parameter once in prod)
-#SECURITY_SEND_REGISTER_EMAIL = False
+SECURITY_CONFIRMABLE = True
+SECURITY_SEND_REGISTER_EMAIL = True
+SECURITY_EMAIL_SENDER = 'zysyw@163.com'
 
 ## Localization
 BABEL_DEFAULT_LOCALE = 'zh_CN'
+
+## Flask-Admin settings
+FLASK_ADMIN_SWATCH = 'cerulean'
+
+## Mail settings
+MAIL_SERVER = 'smtp.163.com'
+MAIL_PORT = 465
+MAIL_USE_TLS =  False
+MAIL_USE_SSL = True
+MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
