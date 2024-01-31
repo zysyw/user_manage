@@ -11,23 +11,18 @@ security = Security(app, user_datastore)
 app.security = security
 
 mail = Mail(app)
-print("Mail Server:", app.config['MAIL_SERVER'])
-print("Mail Port:", app.config['MAIL_PORT'])
-print("Use TLS:", app.config['MAIL_USE_TLS'])
-print("Use SSL:", app.config['MAIL_USE_SSL'])
-print("Mail Username:", app.config['MAIL_USERNAME'])
 
-msg = EmailMessage(
-    'Hello',
-    'Body goes here',
-    'zysyw@163.com',
-    ['to1@example.com', 'to2@example.com'],
-    ['bcc@example.com'],
-    reply_to=['another@example.com'],
-    headers={'Message-ID': 'foo'},
-)
-with app.app_context():
-    msg.send()
+#msg = EmailMessage(
+#     'Hello',
+#     'Body goes here',
+#     'zysyw@163.com',
+#     ['to1@example.com', 'to2@example.com'],
+#     ['bcc@example.com'],
+#     reply_to=['another@example.com'],
+#     headers={'Message-ID': 'foo'},
+# )
+#with app.app_context():
+#    msg.send()
 
 # define a context processor for merging flask-admin's template context into the
 # flask-security views.
