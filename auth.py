@@ -36,11 +36,3 @@ def security_context_processor():
         h=admin_helpers,
         get_url=url_for
     )
-
-def send_mail():
-    with app.app_context():
-        msg = Message("Hello",
-                      recipients=["recipient@example.com"])
-        msg.body = "This is a test email sent from a Flask app!"
-        mail.send(msg)
-        return "Mail sent!"
