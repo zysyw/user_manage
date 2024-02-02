@@ -7,6 +7,7 @@ from flask_security.utils import hash_password
 import flask_admin
 from flask_admin.contrib import sqla
 from flask_admin import helpers as admin_helpers
+from flask_babel import Babel
 
 
 # Create Flask application
@@ -51,7 +52,8 @@ class User(db.Model, UserMixin):
 # Setup Flask-Security
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 security = Security(app, user_datastore)
-
+# Localization
+babel = Babel(app)
 
 # Create customized model view class
 class MyModelView(sqla.ModelView):
@@ -84,6 +86,8 @@ admin = flask_admin.Admin(
     'Example: Auth',
     base_template='my_master.html',
     template_mode='bootstrap4',
+    url='/temp', 
+    endpoint='temp'
 )
 
 # Add model views

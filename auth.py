@@ -12,20 +12,6 @@ app.security = security
 
 mail = Mail(app)
 
-
-#msg = EmailMessage(
-#     'Hello',
-#     'Body goes here',
-#     'zysyw@163.com',
-#     ['to1@example.com', 'to2@example.com'],
-#     ['bcc@example.com'],
-#     reply_to=['another@example.com'],
-#     headers={'Message-ID': 'foo'},
-# )
-#with app.app_context():
-#    msg.send()
-
-
 # define a context processor for merging flask-admin's template context into the
 # flask-security views.
 @security.context_processor

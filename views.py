@@ -1,12 +1,15 @@
 from app import app
-from flask import render_template_string
+from flask import render_template, render_template_string
 from flask_security import auth_required
 
 # Views
 @app.route('/')
-@auth_required()
-def home():
-    return render_template_string("Hello {{ current_user.email }}")
+def index():
+    return render_template('index.html')
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
 
 @app.route('/register')
 def register():
@@ -21,3 +24,7 @@ def register():
             {{ register_user_form.submit }}
         </form>
     """)
+
+@app.route('/forbidden')
+def forbidden():
+    return render_template('forbidden.html')
