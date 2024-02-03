@@ -36,12 +36,12 @@ SECURITY_USERNAME_ENABLE = True
 SECURITY_USERNAME_REQUIRED = True
 
 # Flask-Security config
-SECURITY_URL_PREFIX = "/admin"
 SECURITY_PASSWORD_SALT = "some_long_random_text"
 SECURITY_PASSWORD_HASH = "pbkdf2_sha256" # use "pbkdf2_sha256" on Windows machines. 
 #SECURITY_TRACKABLE = True
 
 # Flask-Security URLs, overridden because they don't put a / at the end
+SECURITY_URL_PREFIX = "/powerloss"
 SECURITY_LOGIN_URL = "/login/"
 SECURITY_LOGOUT_URL = "/logout/"
 SECURITY_REGISTER_URL = "/register/"

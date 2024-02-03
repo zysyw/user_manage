@@ -18,7 +18,8 @@ class MyAdminIndexView(AdminIndexView):
         # 如果用户登录但没有权限，显示一个友好的错误消息
         return redirect(url_for('forbidden'))
 
-admin = Admin(app, index_view=AdminIndexView(), name='后台管理', endpoint='powerloss', url='/powerloss', base_template='my_master.html', template_mode='bootstrap4')
+index_view = MyAdminIndexView(endpoint='powerloss', url='/powerloss')
+admin = Admin(app, index_view=index_view, name='后台管理', endpoint='powerloss', url='/powerloss', base_template='my_master.html', template_mode='bootstrap4')
 
 class UserAdmin(ModelView):
     # 设置列表视图格式
