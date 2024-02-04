@@ -1,3 +1,4 @@
+import datetime
 from app import app, db
 from peewee import *
 from flask_security import UserMixin, RoleMixin
@@ -44,6 +45,12 @@ class Payment(db.Model):
     payment_date = DateField() # 缴费日期
     amount = FloatField() # 缴费金额
     validity_period = IntegerField()  # 有效期限（天）
-    expiry_date = DateField()  # 到期日期
-    status = TextField()  # 缴费状态，“当期”、“过期”
-    remarks = CharField(null=True)  # 备注，可选  
+    expiry_date = DateField(null=True)
+    status = CharField(null=True)
+    remarks = CharField(null=True)  # 备注，可选
+
+    def save(self, *args, **kwargs):
+        self.expiry_date = self.payment_date + datetime.timedelta(days=self.validity_period)
+        today = datetime.date.today()
+        self.status = "当期" if today <= self.expiry_date else "过期"
+        super().save(*args, **kwargs)

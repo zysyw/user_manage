@@ -25,17 +25,21 @@ def create_tables():
             email='admin@example.com',
             password=hash_password('admin'),
             roles=[user_role, administrator_role],
-            confirmed_at=datetime.utcnow()
+            confirmed_at=datetime.datetime.utcnow()
         )
 
         # 设置用户测试账号
         user_datastore.create_user(
-            username='SunMIn',
-            email='zysyw@163.com',
+            username='tempUser',
+            email='tempUser@example.com',
             password=hash_password('123456789'),
             roles=[user_role, ],
-            confirmed_at=datetime.utcnow()
+            confirmed_at=datetime.datetime.utcnow()
         )
+        #设置用户的缴费记录
+        user = User.get(username='tempUser')
+        Payment.create(user=user, payment_date=datetime.date(2020, 1, 1), amount=100, validity_period=365, remarks='测试用户')
+        Payment.create(user=user, payment_date=datetime.date(2021, 1, 1), amount=100, validity_period=365, remarks='测试用户')
 
         first_names = [
             'Harry', 'Amelia', 'Oliver', 'Jack', 'Isabella', 'Charlie', 'Sophie', 'Mia',
@@ -58,7 +62,7 @@ def create_tables():
                 email=tmp_email,
                 password=hash_password(tmp_pass),
                 roles=[user_role, ],
-                confirmed_at=datetime.utcnow()
+                confirmed_at=datetime.datetime.utcnow()
             )
 
 if __name__ == '__main__':

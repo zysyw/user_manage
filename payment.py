@@ -39,10 +39,49 @@ class PaymentModelView(ModelView):
 
 admin.add_view(PaymentModelView(Payment, name='缴费管理'))
 
+def add_payment_record(user, payment_date, amount, validity_period, remarks=''):
+    # 转换为日期对象，如果 payment_date 是字符串
+    payment_date = datetime.strptime(payment_date, "%Y-%m-%d").date()
+
+    # 查找用户当前的最后一个缴费记录
+    last_payment = Payment.select().where(Payment.user == user, Payment.expiry_date >= datetime.now().date()).order_by(Payment.expiry_date.desc()).first()
+
+    if last_payment:
+        # 如果有当前的缴费记录，则在最后一个到期日的基础上增加有效期限
+        new_expiry_date = last_payment.expiry_date + datetime.timedelta(days=validity_period)
+    else:
+        # 如果没有当前的缴费记录，则到期日为缴费日加上有效期限
+        new_expiry_date = payment_date + datetime.timedelta(days=validity_period)
+
+    # 创建新的缴费记录
+    new_payment = Payment.create(
+        user=user,
+        payment_date=payment_date,
+        amount=amount,
+        validity_period=validity_period,
+        expiration_date=new_expiry_date,
+        status='已缴费',
+        remarks=remarks
+    )
+    return new_payment
+
 def update_payment_records():
     # 每天更新缴费记录的逻辑
-    # ...
-    pass
+
+    today = datetime.now().date()
+
+     # 查询所有尚未过期的缴费记录
+    active_payments = Payment.select().where(Payment.status != '过期')
+
+    for payment in active_payments:
+        # 计算缴费记录的到期日期
+        expiry_date = payment.payment_date + timedelta(days=payment.validity_period)
+
+        # 检查是否过期
+        if expiry_date < today:
+            # 标记为过期
+            payment.status = '过期'
+            payment.save()
 
 def check_and_notify():
     # 检查并通知用户的逻辑
