@@ -2,13 +2,13 @@
 from flask import Blueprint, request, jsonify
 from models import Payment, User  
 from datetime import datetime, timedelta
-from peewee import DoesNotExist
 from flask_admin.contrib.peewee import ModelView
 from admin import admin
+from flask_security import current_user
 
 payment_blueprint = Blueprint('payment', __name__)
 
-class PaymentModelView(ModelView):
+class PaymentAdmin(ModelView):
     # 设置payment类的列表视图格式
     column_list = ('user', 'payment_date', 'amount', 'validity_period', 'expiry_date', 'status', 'remarks')
     # 设置编辑和创建表单中显示的字段
@@ -35,38 +35,28 @@ class PaymentModelView(ModelView):
             else:
                 model.expiry_date = model.payment_date + timedelta(days=model.validity_period)
 
-        super(PaymentModelView, self).on_model_change(form, model, is_created)
+        super(PaymentAdmin, self).on_model_change(form, model, is_created)
 
-admin.add_view(PaymentModelView(Payment, name='缴费管理'))
+# 使用flask-admin的baseView创建单个用户缴费记录的视图，用户只能浏览自己的缴费记录，不能增加、删除和修改
+# 如果用户无相关的缴费记录，则显示“无缴费记录”
+class UserPaymentView(ModelView):
+    column_list = ('payment_date', 'amount', 'validity_period', 'expiry_date', 'status', 'remarks')
+    column_labels = dict(payment_date='缴费日期', amount='缴费金额', validity_period='有效期限', expiry_date='到期日期', status='缴费状态', remarks='备注')
+    can_create = False
+    can_delete = False
+    can_edit = False
+    column_filters = (Payment.payment_date, )
 
-def add_payment_record(user, payment_date, amount, validity_period, remarks=''):
-    # 转换为日期对象，如果 payment_date 是字符串
-    payment_date = datetime.strptime(payment_date, "%Y-%m-%d").date()
+    def get_query(self):
+        return super(UserPaymentView, self).get_query().where(Payment.user == current_user)
 
-    # 查找用户当前的最后一个缴费记录
-    last_payment = Payment.select().where(Payment.user == user, Payment.expiry_date >= datetime.now().date()).order_by(Payment.expiry_date.desc()).first()
+    def get_count_query(self):
+        return super(UserPaymentView, self).get_count_query().where(Payment.user == current_user)
 
-    if last_payment:
-        # 如果有当前的缴费记录，则在最后一个到期日的基础上增加有效期限
-        new_expiry_date = last_payment.expiry_date + datetime.timedelta(days=validity_period)
-    else:
-        # 如果没有当前的缴费记录，则到期日为缴费日加上有效期限
-        new_expiry_date = payment_date + datetime.timedelta(days=validity_period)
-
-    # 创建新的缴费记录
-    new_payment = Payment.create(
-        user=user,
-        payment_date=payment_date,
-        amount=amount,
-        validity_period=validity_period,
-        expiration_date=new_expiry_date,
-        status='已缴费',
-        remarks=remarks
-    )
-    return new_payment
+admin.add_view(PaymentAdmin(Payment, name='缴费管理'))
 
 def update_payment_records():
-    # 每天更新缴费记录的逻辑
+    # 按当天日期更新缴费记录
 
     today = datetime.now().date()
 

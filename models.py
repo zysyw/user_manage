@@ -14,8 +14,8 @@ class Role(RoleMixin, db.Model):
 # N.B. order is important since db.Model also contains a get_id() -
 # we need the one from UserMixin.
 class User(UserMixin, db.Model):
-    username = TextField()
-    email = TextField() # unique email
+    username = TextField(unique=True)
+    email = TextField(unique=True) # unique email
     password = TextField()
     active = BooleanField(default=True)
     fs_uniquifier = TextField(null=False)
@@ -50,7 +50,16 @@ class Payment(db.Model):
     remarks = CharField(null=True)  # 备注，可选
 
     def save(self, *args, **kwargs):
-        self.expiry_date = self.payment_date + datetime.timedelta(days=self.validity_period)
+        
+        # 查找用户当前的最后一个缴费记录
+        last_payment = Payment.select().where(Payment.user == self, Payment.expiry_date >= datetime.now().date()).order_by(Payment.expiry_date.desc()).first()
+        if last_payment:
+            # 如果有当前的缴费记录，则在最后一个到期日的基础上增加有效期限
+            self.expiry_date = last_payment.expiry_date + datetime.timedelta(days=self.validity_period)
+        else:
+            # 如果没有当前的缴费记录，则到期日为缴费日加上有效期限
+            self.expiry_date = self.payment_date + datetime.timedelta(days=self.validity_period)
+        
         today = datetime.date.today()
         self.status = "当期" if today <= self.expiry_date else "过期"
         super().save(*args, **kwargs)
