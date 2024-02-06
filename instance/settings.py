@@ -73,3 +73,18 @@ MAIL_USE_TLS =  False
 MAIL_USE_SSL = True
 MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
 MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+
+JOBS = [
+        {
+            'id': 'update_payment_records',
+            'func': 'payment:update_payment_records',
+            'trigger': 'corn',
+            'hour': 17
+        },
+        {
+            'id': 'check_and_notify',
+            'func': 'payment:check_and_notify',
+            'trigger': 'corn',
+            'hour': 17
+        }
+    ]
