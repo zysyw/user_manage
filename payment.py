@@ -92,7 +92,7 @@ def check_and_notify():
         # 检查即将过期的当期支付记录
         payments_soon_to_expire = Payment.select().where(
             (Payment.expiry_date == half_month_away) & (Payment.status == "当期")
-        ).all()
+        )
 
         for payment in payments_soon_to_expire:
             send_reminder_email(payment)

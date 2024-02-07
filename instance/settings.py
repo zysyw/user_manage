@@ -73,18 +73,21 @@ MAIL_USE_TLS =  False
 MAIL_USE_SSL = True
 MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
 MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+MAIL_DEFAULT_SENDER = 'zysyw@163.com'
 
 JOBS = [
         {
             'id': 'update_payment_records',
             'func': 'payment:update_payment_records',
             'trigger': 'cron',
-            'hour': 17
+            'hour': 22,
+            'minute': 28
         },
         {
             'id': 'check_and_notify',
             'func': 'payment:check_and_notify',
             'trigger': 'cron',
-            'hour': 17
+            'hour': 22,
+            'minute': 28
         }
     ]
