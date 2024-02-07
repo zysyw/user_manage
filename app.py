@@ -3,7 +3,7 @@ from flask import Flask
 from playhouse.flask_utils import FlaskDB
 from dotenv import load_dotenv
 from flask_babel import Babel
-
+from flask_apscheduler import APScheduler
 
 # VARIABLE PARAMETERS
 load_dotenv('.env')

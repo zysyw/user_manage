@@ -1,12 +1,13 @@
 # payment.py
-from flask import Blueprint, request, jsonify
 from models import Payment, User  
 from datetime import datetime, timedelta
 from flask_admin.contrib.peewee import ModelView
 from admin import admin
+from app import app
+from auth import mail
 from flask_security import current_user
-
-payment_blueprint = Blueprint('payment', __name__)
+from flask_apscheduler import APScheduler
+from flask_mailman import EmailMessage
 
 class PaymentAdmin(ModelView):
     # 设置payment类的列表视图格式
@@ -36,12 +37,11 @@ class PaymentAdmin(ModelView):
                 model.expiry_date = model.payment_date + timedelta(days=model.validity_period)
 
         super(PaymentAdmin, self).on_model_change(form, model, is_created)
-        
-    def is_accessible(self):
-        return current_user.is_authenticated
     
-    def is_visible(self):
-        return current_user.has_role('administrator')
+    def is_accessible(self):
+        if not current_user.is_authenticated:
+            return False
+        return any(role.name == 'administrator' for role in current_user.roles)
 
 # 使用flask-admin的baseView创建单个用户缴费记录的视图，用户只能浏览自己的缴费记录，不能增加、删除和修改
 # 如果用户无相关的缴费记录，则显示“无缴费记录”
@@ -58,14 +58,11 @@ class UserPaymentView(ModelView):
 
     def get_count_query(self):
         return super(UserPaymentView, self).get_count_query().where(Payment.user == current_user)
-    
     def is_accessible(self):
-        return current_user.is_authenticated
+        if not current_user.is_authenticated:
+            return False
+        return any(role.name == 'user' for role in current_user.roles)
     
-    def is_visible(self):
-        # 如果用户无缴费记录或角色权限不是'user'，则不显示
-        return current_user.has_role('user') and Payment.select().where(Payment.user == current_user).count() > 0
-
 admin.add_view(PaymentAdmin(Payment, name='缴费管理'))
 admin.add_view(UserPaymentView(Payment, name='我的缴费记录', endpoint='user_payment'))
 
@@ -88,6 +85,43 @@ def update_payment_records():
             payment.save()
 
 def check_and_notify():
-    # 检查并通知用户的逻辑
-    # ...
-    pass
+    with app.app_context():
+        today = datetime.now().date()
+        half_month_away = today + timedelta(days=15)
+
+        # 检查即将过期的当期支付记录
+        payments_soon_to_expire = Payment.select().where(
+            (Payment.expiry_date == half_month_away) & (Payment.status == "当期")
+        ).all()
+
+        for payment in payments_soon_to_expire:
+            send_reminder_email(payment)
+
+        # 检查今天到期的支付记录
+        payments_expiring_today = Payment.select().where(
+            (Payment.expiry_date == datetime.now().date()) & (Payment.status == "当期")
+        )
+
+        for payment in payments_expiring_today:
+            send_expiry_notification(payment)
+
+def send_reminder_email(payment):
+    email = EmailMessage(
+        '缴费提醒通知',
+        '您的账户将在15天后到期，如需要继续使用，请尽快续费。',
+        to=[payment.user.email]
+    )
+    email.send()
+
+def send_expiry_notification(payment):
+    email = EmailMessage(
+        '缴费到期通知',
+        '您的账户已于今天到期。',
+        to=[payment.user.email]
+    )
+    email.send()
+
+# 启用定时更新缴费状态和通知用户的功能
+scheduler = APScheduler()
+scheduler.init_app(app) # 用这种app方式配置APScheduler时，配置命令需要放在被调函数定义之后
+scheduler.start()
