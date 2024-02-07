@@ -22,6 +22,7 @@ class UserAdmin(ModelView): # 用户的管理页面
     # 设置列表视图格式
     column_list = ('username', 'email', 'roles')
     column_labels = dict(username='用户名称', email='电子邮件', roles='权限')
+    
     def _list_roles(view, context, model, name):
         # 取得用户相关的角色
         return ', '.join([role.name for role in model.roles])
@@ -29,5 +30,11 @@ class UserAdmin(ModelView): # 用户的管理页面
     column_formatters = {
         'roles': _list_roles
     }
+    
+    def is_accessible(self):
+        return current_user.is_authenticated
+    
+    def is_visible(self):
+        return current_user.has_role('administrator')
 
 admin.add_view(UserAdmin(User, name='用户管理'))

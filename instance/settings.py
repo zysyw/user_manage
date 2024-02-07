@@ -46,9 +46,9 @@ SECURITY_LOGIN_URL = "/login/"
 SECURITY_LOGOUT_URL = "/logout/"
 SECURITY_REGISTER_URL = "/register/"
 
-SECURITY_POST_LOGIN_VIEW = "/admin/"
-SECURITY_POST_LOGOUT_VIEW = "/admin/"
-SECURITY_POST_REGISTER_VIEW = "/admin/"
+SECURITY_POST_LOGIN_VIEW = "/powerloss/"
+SECURITY_POST_LOGOUT_VIEW = "/powerloss/"
+SECURITY_POST_REGISTER_VIEW = "/powerloss/"
 
 # Defining the type of passwords to be set by user at register. 
 #SECURITY_PASSWORD_LENGTH_MIN = 6

@@ -36,6 +36,12 @@ class PaymentAdmin(ModelView):
                 model.expiry_date = model.payment_date + timedelta(days=model.validity_period)
 
         super(PaymentAdmin, self).on_model_change(form, model, is_created)
+        
+    def is_accessible(self):
+        return current_user.is_authenticated
+    
+    def is_visible(self):
+        return current_user.has_role('administrator')
 
 # 使用flask-admin的baseView创建单个用户缴费记录的视图，用户只能浏览自己的缴费记录，不能增加、删除和修改
 # 如果用户无相关的缴费记录，则显示“无缴费记录”
@@ -52,8 +58,16 @@ class UserPaymentView(ModelView):
 
     def get_count_query(self):
         return super(UserPaymentView, self).get_count_query().where(Payment.user == current_user)
+    
+    def is_accessible(self):
+        return current_user.is_authenticated
+    
+    def is_visible(self):
+        # 如果用户无缴费记录或角色权限不是'user'，则不显示
+        return current_user.has_role('user') and Payment.select().where(Payment.user == current_user).count() > 0
 
 admin.add_view(PaymentAdmin(Payment, name='缴费管理'))
+admin.add_view(UserPaymentView(Payment, name='我的缴费记录', endpoint='user_payment'))
 
 def update_payment_records():
     # 按当天日期更新缴费记录
