@@ -37,6 +37,11 @@ class PaymentAdmin(ModelView):
                 model.expiry_date = model.payment_date + timedelta(days=model.validity_period)
 
         super(PaymentAdmin, self).on_model_change(form, model, is_created)
+    
+    def is_accessible(self):
+        if not current_user.is_authenticated:
+            return False
+        return any(role.name == 'administrator' for role in current_user.roles)
 
 # 使用flask-admin的baseView创建单个用户缴费记录的视图，用户只能浏览自己的缴费记录，不能增加、删除和修改
 # 如果用户无相关的缴费记录，则显示“无缴费记录”
@@ -53,8 +58,13 @@ class UserPaymentView(ModelView):
 
     def get_count_query(self):
         return super(UserPaymentView, self).get_count_query().where(Payment.user == current_user)
-
+    def is_accessible(self):
+        if not current_user.is_authenticated:
+            return False
+        return any(role.name == 'user' for role in current_user.roles)
+    
 admin.add_view(PaymentAdmin(Payment, name='缴费管理'))
+admin.add_view(UserPaymentView(Payment, name='我的缴费记录', endpoint='user_payment'))
 
 def update_payment_records():
     # 按当天日期更新缴费记录
@@ -80,21 +90,19 @@ def check_and_notify():
         half_month_away = today + timedelta(days=15)
 
         # 检查即将过期的当期支付记录
-        payments_soon_to_expire = Payment.query.filter(
-            Payment.expiry_date == half_month_away,
-            Payment.status == "当期"
+        payments_soon_to_expire = Payment.select().where(
+            (Payment.expiry_date == half_month_away) & (Payment.status == "当期")
         ).all()
 
         for payment in payments_soon_to_expire:
             send_reminder_email(payment)
 
         # 检查今天到期的支付记录
-        payments_due_today = Payment.query.filter(
-            Payment.expiry_date == today,
-            Payment.status == "当期"
-        ).all()
+        payments_expiring_today = Payment.select().where(
+            (Payment.expiry_date == datetime.now().date()) & (Payment.status == "当期")
+        )
 
-        for payment in payments_due_today:
+        for payment in payments_expiring_today:
             send_expiry_notification(payment)
 
 def send_reminder_email(payment):

@@ -29,5 +29,9 @@ class UserAdmin(ModelView): # 用户的管理页面
     column_formatters = {
         'roles': _list_roles
     }
+    def is_accessible(self):
+        if not current_user.is_authenticated:
+            return False
+        return any(role.name == 'administrator' for role in current_user.roles)
 
 admin.add_view(UserAdmin(User, name='用户管理'))
