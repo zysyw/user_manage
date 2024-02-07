@@ -9,10 +9,7 @@ from flask_security import current_user
 from flask_apscheduler import APScheduler
 from flask_mailman import EmailMessage
 
-# 启用定时更新缴费状态和通知用户的功能
-scheduler = APScheduler()
-scheduler.init_app(app)
-scheduler.start()
+
 
 class PaymentAdmin(ModelView):
     # 设置payment类的列表视图格式

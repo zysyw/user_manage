@@ -78,13 +78,13 @@ JOBS = [
         {
             'id': 'update_payment_records',
             'func': 'payment:update_payment_records',
-            'trigger': 'corn',
+            'trigger': 'cron',
             'hour': 17
         },
         {
             'id': 'check_and_notify',
             'func': 'payment:check_and_notify',
-            'trigger': 'corn',
+            'trigger': 'cron',
             'hour': 17
         }
     ]
