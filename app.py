@@ -17,8 +17,3 @@ db = FlaskDB(app)
 
 # Localization
 babel = Babel(app)
-
-# 启用定时更新缴费状态和通知用户的功能
-scheduler = APScheduler()
-scheduler.init_app(app)
-scheduler.start()
