@@ -80,14 +80,14 @@ JOBS = [
             'id': 'update_payment_records',
             'func': 'payment:update_payment_records',
             'trigger': 'cron',
-            'hour': 22,
-            'minute': 28
+            'hour': 9,
+            'minute': 2
         },
         {
             'id': 'check_and_notify',
             'func': 'payment:check_and_notify',
             'trigger': 'cron',
-            'hour': 22,
-            'minute': 28
+            'hour': 9,
+            'minute': 2
         }
     ]

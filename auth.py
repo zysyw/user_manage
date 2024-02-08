@@ -1,4 +1,3 @@
-from flask_mailman import Mail
 from app import app, db
 from flask_security import Security, PeeweeUserDatastore
 from models import *
@@ -9,8 +8,6 @@ from flask import url_for
 user_datastore = PeeweeUserDatastore(db, User, Role, UserRoles)
 security = Security(app, user_datastore) 
 app.security = security
-
-mail = Mail(app)
 
 # define a context processor for merging flask-admin's template context into the
 # flask-security views.

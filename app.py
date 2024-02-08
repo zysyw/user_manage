@@ -1,9 +1,8 @@
-import os
 from flask import Flask
 from playhouse.flask_utils import FlaskDB
 from dotenv import load_dotenv
 from flask_babel import Babel
-from flask_apscheduler import APScheduler
+from flask_mailman import Mail
 
 # VARIABLE PARAMETERS
 load_dotenv('.env')
@@ -17,3 +16,6 @@ db = FlaskDB(app)
 
 # Localization
 babel = Babel(app)
+
+# Email settings
+mail = Mail(app)

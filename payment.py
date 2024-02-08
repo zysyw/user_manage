@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from flask_admin.contrib.peewee import ModelView
 from admin import admin
 from app import app
-from auth import mail
 from flask_security import current_user
 from flask_apscheduler import APScheduler
 from flask_mailman import EmailMessage
@@ -107,7 +106,7 @@ def check_and_notify():
 
 def send_reminder_email(payment):
     email = EmailMessage(
-        '缴费提醒通知',
+        '线损计算系统缴费提醒通知',
         '您的账户将在15天后到期，如需要继续使用，请尽快续费。',
         to=[payment.user.email]
     )
@@ -115,7 +114,7 @@ def send_reminder_email(payment):
 
 def send_expiry_notification(payment):
     email = EmailMessage(
-        '缴费到期通知',
+        '线损计算系统缴费到期通知',
         '您的账户已于今天到期。',
         to=[payment.user.email]
     )
