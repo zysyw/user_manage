@@ -21,8 +21,8 @@ DATABASE = {
     'engine': 'peewee.SqliteDatabase',
 }
 
-# Enable protection agains *Cross-site Request Forgery (CSRF)*
-#CSRF_ENABLED = True
+# Disable protection agains *Cross-site Request Forgery (CSRF)*
+SECURITY_CSRF_IGNORE_UNAUTH_ENDPOINTS = True
 # Use a secure, unique and absolutely secret key for
 # signing the data. 
 #CSRF_SESSION_KEY = os.environ.get('CSRF_SESSION_KEY')
@@ -78,14 +78,14 @@ MAIL_DEFAULT_SENDER = 'zysyw@163.com'
 JOBS = [
         {
             'id': 'update_payment_records',
-            'func': 'payment:update_payment_records',
+            'func': 'admin.payment:update_payment_records',
             'trigger': 'cron',
             'hour': 9,
             'minute': 2
         },
         {
             'id': 'check_and_notify',
-            'func': 'payment:check_and_notify',
+            'func': 'admin.payment:check_and_notify',
             'trigger': 'cron',
             'hour': 9,
             'minute': 2

@@ -2,7 +2,7 @@ from flask_admin import Admin, AdminIndexView
 from app import app
 from flask_admin.contrib.peewee import ModelView
 from flask_security import current_user, roles_required
-from models import User, UserRoles, Role
+from .models import User, UserRoles, Role
 from flask import redirect, url_for, request
 
 class IndexView(AdminIndexView): # 程序主页面允许游客访问、登录和注册，所以不需要权限

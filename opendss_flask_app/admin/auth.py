@@ -1,7 +1,7 @@
 from app import app, db
 from flask_security import Security, PeeweeUserDatastore
-from models import *
-from admin import admin
+from .models import *
+from .admin import admin
 from flask_admin import helpers as admin_helpers
 from flask import url_for
 

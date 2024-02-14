@@ -1,3 +1,4 @@
+from flask_security import auth_token_required
 import opendssdirect as dss
 from flask import Blueprint, jsonify, render_template
 import json
@@ -56,7 +57,8 @@ def get_opendss_meters():
     
     return render_template('show_meter_registers.html', registers=registers,)
 
-@run_opendss_bp.route('/circut-losses')
+@run_opendss_bp.route('/api/circut-losses')
+@auth_token_required
 def get_circut_losses():
     global transformer_losses, line_losses
     # 收集 EnergyMeter 数据
@@ -88,7 +90,7 @@ def get_transformer_losses(filter_pattern=""):
     transformer_losses = {}
     while True:
         name = dss.Transformers.Name()
-        print(name[-1])
+
         # 使用复杂的过滤规则
         if not filter_name(name, filter_pattern):
             losses = {

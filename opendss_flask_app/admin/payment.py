@@ -1,8 +1,8 @@
 # payment.py
-from models import Payment, User  
+from .models import Payment, User  
 from datetime import datetime, timedelta
 from flask_admin.contrib.peewee import ModelView
-from admin import admin
+from .admin import admin
 from app import app
 from flask_security import current_user
 from flask_apscheduler import APScheduler

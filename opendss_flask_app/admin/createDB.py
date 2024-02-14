@@ -2,8 +2,8 @@ import datetime
 from flask_security import hash_password
 from app import app, db
 
-from models import *   
-from auth import *
+from .models import *   
+from .auth import *
 
 def create_tables():
     import string
