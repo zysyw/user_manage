@@ -1,3 +1,4 @@
+import tempfile
 from flask_security import auth_token_required
 import opendssdirect as dss
 from flask import Blueprint, jsonify, render_template
@@ -9,12 +10,23 @@ run_opendss_bp = Blueprint('run_opendss_bp', __name__)
 transformer_losses = {}
 line_losses = {}
 
-def run_opendss(opendss_script_filename):
+def run_opendss(opendss_script):
     global transformer_losses, line_losses
     # 初始化 OpenDSS
     dss.Basic.Start(0)
+    
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
+        # 写入数据到临时文件
+        temp_file.write(opendss_script)
+        
+    opendss_script_filename = temp_file.name
      
+    # 执行opendss脚本命令 
     dss.run_command(f"Redirect [{opendss_script_filename}]")
+    
+    # 在使用完成后，删除临时文件
+    import os
+    os.unlink(opendss_script_filename)
 
     # 初始化 OpenDSS
     transformer_losses = {}

@@ -57,6 +57,7 @@ class UserPaymentView(ModelView):
 
     def get_count_query(self):
         return super(UserPaymentView, self).get_count_query().where(Payment.user == current_user)
+    
     def is_accessible(self):
         if not current_user.is_authenticated:
             return False

@@ -2,10 +2,12 @@ import datetime
 from flask_security import hash_password
 from app import app, db
 
-from .models import *   
-from .auth import *
+from admin.models import *   
+from admin.auth import *
 
-def create_tables():
+from opendss_data.data_modles import *
+
+def create_user_tables():
     import string
     import random
     
@@ -64,6 +66,13 @@ def create_tables():
                 roles=[user_role, ],
                 confirmed_at=datetime.datetime.utcnow()
             )
+            
+def create_calculation_tables():
+    for Model in (Calculation_Process, VI, VIHourValue, Loss):
+        Model.drop_table(fail_silently=True)
+        Model.create_table(fail_silently=True)
 
 if __name__ == '__main__':
-    create_tables()
+    # create_user_tables()
+    create_calculation_tables()
+    pass

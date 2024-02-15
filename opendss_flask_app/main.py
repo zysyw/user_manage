@@ -3,9 +3,9 @@ from app import app
 
 from admin.models import *   
 from admin.auth import * 
-from admin.views import *
 from admin.admin import *
 from admin.payment import *
+from admin.views import *
 
 from opendss_calculation.calculate import calculate_bp
 from opendss_calculation.received_data import received_data_bp

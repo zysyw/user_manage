@@ -6,8 +6,8 @@ from peewee import *
 class Calculation_Process(db.Model):
     user = ForeignKeyField(User, backref='calculation_processes')
     upload_time = DateTimeField(default=datetime.now) # 上传时间
-    json_data = TextField() # 接收的 JSON 数据
-    opendss_script_name = TextField() # 生成的 OpenDSS 脚本文件名
+    json_data = TextField(default="") # 接收的 JSON 数据
+    opendss_script = TextField(default="") # 生成的 OpenDSS 脚本
 
     def __str__(self):
         return f"{self.user.username}'s calculation process at {self.upload_time}"
