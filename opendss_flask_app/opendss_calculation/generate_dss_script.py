@@ -1,23 +1,4 @@
-from flask import Blueprint, render_template, current_app
 import os
-
-opendss_script_bp = Blueprint('opendss_script_bp', __name__)
-
-@opendss_script_bp.route('/opendss-script')
-def show_opendss_script():
-    # 从配置中获取文件名
-    script_file = current_app.config.get('opendss_script_file', '')
-    print("Script file from config:", script_file)
-
-    # 检查文件名是否存在且文件是否可读
-    if script_file and os.path.isfile(script_file):
-        with open(script_file, 'r') as file:
-            content = file.readlines()
-    else:
-        content = ["未生成OpenDSS脚本文件"]
-
-    # 返回渲染的模板
-    return render_template('show_script.html', filename=script_file, content=content)
 
 def generate_dss_script(data):
     # 使用 Jinja2 生成 OpenDSS 脚本

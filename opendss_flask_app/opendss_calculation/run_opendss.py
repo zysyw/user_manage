@@ -4,13 +4,13 @@ import opendssdirect as dss
 from flask import Blueprint, jsonify, render_template
 import json
 import re
-
-run_opendss_bp = Blueprint('run_opendss_bp', __name__)
+from app import app, db
+from opendss_data.data_modles import *
 
 transformer_losses = {}
 line_losses = {}
 
-def run_opendss(opendss_script):
+def run_opendss(opendss_script, new_process):
     global transformer_losses, line_losses
     # 初始化 OpenDSS
     dss.Basic.Start(0)
@@ -31,37 +31,101 @@ def run_opendss(opendss_script):
     # 初始化 OpenDSS
     transformer_losses = {}
     line_losses = {}
+    hourly_voltages = {}
+    hourly_currents = {}
     dss.Solution.Number(1)
-    for _ in range(24):
+    for hour in range(24): # 这个24有点生硬，今后应修改
         dss.Solution.Solve()
+        hourly_voltages[hour] = dict(zip(dss.Circuit.AllNodeNames(), dss.Circuit.AllBusVMag()))
+        hourly_currents[hour] = get_line_currents()
         # 累加每个小时的元件损耗
         # 过滤以 "Sub" 开头或以 "publictransformer" 结尾的变压器，即公用变压器
         pattern = r"^(sub)|(.*publictransformer)$"
         transformer_losses = add_transformer_losses(transformer_losses, get_transformer_losses(filter_pattern=pattern))
         line_losses = add_line_losses(line_losses, get_line_losses())
+
+    save_opendss_voltages(new_process, hourly_voltages)
+    #save_opendss_currents(new_process, hourly_currents)
     
     return {"Load Flow Completed": "Yes" if dss.Solution.Converged() else "No"}
 
-@run_opendss_bp.route('/bus-voltages')
-def get_opendss_voltages():
-    
-    voltages = dss.Circuit.AllBusMagPu()
-    
-    return jsonify(voltages)
+def save_opendss_voltages(new_process, hourly_voltages):
+    transformed_voltages = {}
+    for hour, voltages in hourly_voltages.items():
+        for index, (node_name, voltage) in enumerate(voltages.items()):
+            # 每隔三个节点取一个值
+            if index % 3 != 0:
+                continue
+            
+            # 去掉节点名称结尾的 ".1"
+            if node_name.endswith(".1"):
+                node_name = node_name[:-2]  # 删除最后两个字符，即 ".1"
+                
+            # 如果节点名称不在新结构的字典中，则创建一个新的节点名称条目
+            if node_name not in transformed_voltages:
+                transformed_voltages[node_name] = {}
+                
+            # 将该小时的电压值添加到相应的节点名称条目中
+            transformed_voltages[node_name][hour] = voltage
+    print(transformed_voltages)
+    # 将每个节点的电压值存储到 VI 和 VIHourValue 表中       
+    for node_name, voltages in transformed_voltages.items():
+        # 创建或获取与当前节点名称相关联的 VI 实例
+        vi_instance = VI.create(
+            calculation_process=new_process,
+            component_name=node_name,
+            unit = 'V'  # 电压单位是 kV
+        )
+        
+        # 将每个小时的电压值存储到 VIHourValue 表中
+        for hour, voltage in voltages.items():
+            VIHourValue.create(
+                vi=vi_instance,
+                hour=hour,
+                value=voltage
+            )
 
-@run_opendss_bp.route('/line-currents')
 def get_line_currents():
+    
     line_names = dss.Lines.AllNames()
     currents_data = {}
 
     for name in line_names:
         dss.Lines.Name(name)
         currents = dss.CktElement.CurrentsMagAng()
-        currents_data[name] = currents
+        currents_data[name] = currents[0] # 只取A相电流幅值
+        
+    return currents_data
 
-    return jsonify(currents_data)
+def save_opendss_currents(new_process, hourly_currents):
+    transformed_currents = {}
+    for hour, currents in hourly_currents.items():
+        for line_name, current in currents.items():                
+            # 如果节点名称不在新结构的字典中，则创建一个新的节点名称条目
+            if line_name not in transformed_currents:
+                transformed_currents[line_name] = {}
+                
+            # 将该小时的电流值添加到相应的线路名称条目中
+            transformed_currents[line_name][hour] = current
 
-@run_opendss_bp.route('/show_first-meter')
+    # 将每条线路的电流值存储到 VI 和 VIHourValue 表中       
+    for line_name, currents in transformed_currents.items():
+        # 创建或获取与当前节点名称相关联的 VI 实例
+        vi_instance = VI.create(
+            calculation_process=new_process,
+            component_name=line_name,
+            unit = 'A'  # 电压单位是 kV
+        )
+        
+        # 将每个小时的电流值存储到 VIHourValue 表中
+        for hour, current in currents.items():
+            VIHourValue.create(
+                vi=vi_instance,
+                hour=hour,
+                value=current
+            )
+
+@app.route('/show_first-meter')
 def get_opendss_meters():
     meter_names = dss.Meters.RegisterNames()
     meter_values = dss.Meters.RegisterValues()
@@ -69,7 +133,7 @@ def get_opendss_meters():
     
     return render_template('show_meter_registers.html', registers=registers,)
 
-@run_opendss_bp.route('/api/circut-losses')
+@app.route('/api/circut-losses')
 @auth_token_required
 def get_circut_losses():
     global transformer_losses, line_losses

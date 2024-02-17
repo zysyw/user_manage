@@ -13,7 +13,7 @@
 <script>
     $(document).ready(function() {
         // 获取从 Flask 传递的 JSON 数据
-        var myDict = {{ dict_data | safe }};
+        var myDict = {{ content | safe }};
         
         // 使用 jQuery JSONView 展示数据
         $("#json-renderer").JSONView(myDict);
