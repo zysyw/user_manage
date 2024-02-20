@@ -75,5 +75,18 @@ class LossView(ModelView):
     def get_count_query(self):
         return super(LossView, self).get_count_query().join(Calculation_Process).where(Calculation_Process.user == current_user)
     
+    def _format_value(v, c, m, p):
+        # 获取指定列的值
+        value = getattr(m, p)
+        # 返回格式化后的字符串，保留两位小数
+        return '{:.2f}'.format(value)
+
+    column_formatters = {
+        'total_loss': _format_value,
+        'load_loss': _format_value,
+        'no_load_loss': _format_value
+    }
+
 admin.add_view(UserCalculationProcessView(Calculation_Process, name='计算记录', endpoint='user_calculation'))
 admin.add_view(VIView(VI, name='VI', endpoint='calculation_VI'))
+admin.add_view(LossView(Loss, name='损耗', endpoint='calculation_Loss'))

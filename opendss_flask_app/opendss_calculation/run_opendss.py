@@ -6,6 +6,7 @@ import json
 import re
 from app import app, db
 from opendss_data.data_modles import *
+from opendss_calculation.error_class import NoConvergedError
 
 transformer_losses = {}
 line_losses = {}
@@ -34,8 +35,11 @@ def run_opendss(opendss_script, new_process):
     hourly_voltages = {}
     hourly_currents = {}
     dss.Solution.Number(1)
+    # 以下程序在solve的时候可能出现不收敛，增加错误处理
     for hour in range(24): # 这个24有点生硬，今后应修改
         dss.Solution.Solve()
+        if dss.Solution.Converged():
+            raise NoConvergedError(hour)
         hourly_voltages[hour] = dict(zip(dss.Circuit.AllNodeNames(), dss.Circuit.AllBusVMag()))
         hourly_currents[hour] = get_line_currents()
         # 累加每个小时的元件损耗
@@ -45,7 +49,8 @@ def run_opendss(opendss_script, new_process):
         line_losses = add_line_losses(line_losses, get_line_losses())
 
     save_opendss_voltages(new_process, hourly_voltages)
-    #save_opendss_currents(new_process, hourly_currents)
+    save_opendss_currents(new_process, hourly_currents)
+    save_opendss_losses(new_process, transformer_losses, line_losses)
     
     return {"Load Flow Completed": "Yes" if dss.Solution.Converged() else "No"}
 
@@ -67,7 +72,7 @@ def save_opendss_voltages(new_process, hourly_voltages):
                 
             # 将该小时的电压值添加到相应的节点名称条目中
             transformed_voltages[node_name][hour] = voltage
-    print(transformed_voltages)
+
     # 将每个节点的电压值存储到 VI 和 VIHourValue 表中       
     for node_name, voltages in transformed_voltages.items():
         # 创建或获取与当前节点名称相关联的 VI 实例
@@ -126,6 +131,7 @@ def save_opendss_currents(new_process, hourly_currents):
             )
 
 @app.route('/show_first-meter')
+@auth_token_required
 def get_opendss_meters():
     meter_names = dss.Meters.RegisterNames()
     meter_values = dss.Meters.RegisterValues()
@@ -236,3 +242,23 @@ def filter_name(name, pattern):
     返回 True 如果名称与模式匹配，否则返回 False。
     """
     return re.match(pattern, name) is not None
+
+def save_opendss_losses(new_process, transformer_losses, line_losses):
+    for name, losses in transformer_losses.items():
+        Loss.create(
+            calculation_process=new_process,
+            component_name=name,
+            unit="kWh",  
+            total_loss=losses["TotalLoss"],
+            load_loss=losses["LoadLoss"],
+            no_load_loss=losses["NoLoadLoss"]
+        )
+    for name, losses in line_losses.items():
+        Loss.create(
+            calculation_process=new_process,
+            component_name=name,
+            unit="kWh",  
+            total_loss=losses,
+            load_loss=losses,
+            no_load_loss=0
+        )

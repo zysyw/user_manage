@@ -43,10 +43,10 @@ class VIHourValue(db.Model):
 class Loss(db.Model):
     calculation_process = ForeignKeyField(Calculation_Process, backref='loss')
     component_name = TextField(default="")
-    unit = TextField(default="")  # kW
+    unit = TextField(default="")  # kWh
     total_loss = FloatField(default=0.0)  # 总损耗
     load_loss = FloatField(default=0.0)  # 负载损耗
-    no_load_loss = FloatField(default=0.0)  # 空载损耗
+    no_load_loss = FloatField(default=0.0)  # 空载损耗，线路空载损耗为0
 
     def __str__(self):
         return f"{self.component_name} Total Loss: {self.total_loss} {self.unit}"

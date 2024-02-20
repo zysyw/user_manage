@@ -1,6 +1,8 @@
 import json
 from app import app
 from flask import Blueprint, request, jsonify, current_app
+
+from opendss_calculation.error_class import NoConvergedError
 from .run_opendss import run_opendss
 from .generate_dss_script import generate_dss_script
 from flask_security import auth_token_required, current_user
@@ -21,15 +23,21 @@ def process_data():
     new_process.json_data = json.dumps(data, ensure_ascii=False)
 
     # 生成 OpenDSS 脚本文件, 生成的脚本文件放在opendss_script_files中
-    dss_script = generate_dss_script(data)
+    try:
+        dss_script = generate_dss_script(data)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 422
     new_process.opendss_script = dss_script
     new_process.save()
 
     # 运行 OpenDSS 计算 
-    result = run_opendss(dss_script, new_process)
+    try:
+        run_opendss(dss_script, new_process)
+    except NoConvergedError as e:
+        return jsonify({"error": e.message}), 422
     new_process.save()
 
-    return jsonify(result)
+    return jsonify({"result": "计算成功！"}), 200
 
 def clean_up_all_results(user):
     # 获取用户的所有 Calculation_Process 记录
@@ -37,6 +45,6 @@ def clean_up_all_results(user):
     
     # 遍历所有 Calculation_Process 记录
     for process in processes:
+        VIHourValue.delete().where(VIHourValue.vi.in_(VI.select(VI.id).where(VI.calculation_process == process))).execute()
         VI.delete().where(VI.calculation_process == process).execute()
-        VIHourValue.delete().where(VIHourValue.vi == VI.select().where(VI.calculation_process == process)).execute()
         Loss.delete().where(Loss.calculation_process == process).execute()
