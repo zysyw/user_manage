@@ -5,7 +5,7 @@ def generate_dss_script(data):
 
     # 确保 JSON 数据的第一层只有一个键值对：excel侧形成json的规则是以文件名为key，所有的数据打包成value
     if len(data) != 1:
-        raise ValueError("JSON 数据应该只包含一个顶级键")
+        raise ValueError("JSON 数据格式错误！")
 
     # 获取顶级键名，也即文件名
     top_level_key = list(data.keys())[0]

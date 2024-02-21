@@ -38,7 +38,7 @@ def run_opendss(opendss_script, new_process):
     # 以下程序在solve的时候可能出现不收敛，增加错误处理
     for hour in range(24): # 这个24有点生硬，今后应修改
         dss.Solution.Solve()
-        if dss.Solution.Converged():
+        if not dss.Solution.Converged():
             raise NoConvergedError(hour)
         hourly_voltages[hour] = dict(zip(dss.Circuit.AllNodeNames(), dss.Circuit.AllBusVMag()))
         hourly_currents[hour] = get_line_currents()
@@ -143,10 +143,10 @@ def get_opendss_meters():
 @auth_token_required
 def get_circut_losses():
     global transformer_losses, line_losses
+    
     # 收集 EnergyMeter 数据
     dss.Meters.First()
     meter_data = {}
-    json_data = 'Null'
     while True:
         name = dss.Meters.Name()
         registers = dss.Meters.RegisterNames()
@@ -154,17 +154,19 @@ def get_circut_losses():
         meter_data[name] = dict(zip(registers, values))
         if not dss.Meters.Next() > 0:
             break
-
-    # 整合所有数据并转换为 JSON
+    
+    # 如果transformer_losses或line_losses，抛出值异常
+    if not transformer_losses or not line_losses:
+        return jsonify({"errors": "在计算损耗之前，请先运行 OpenDSS 计算"}), 422
+    
+    # 整合所有数据
     all_data = {
         "EnergyMeters": meter_data,
         "TransformerLosses": transformer_losses,
         "LineLosses": line_losses
     }
-    json_data = json.dumps(all_data)
 
-    # 输出 JSON 数据或进行后续处理
-    return jsonify(json_data)
+    return jsonify(all_data), 200
 
 def get_transformer_losses(filter_pattern=""):
     # 收集变压器损耗数据

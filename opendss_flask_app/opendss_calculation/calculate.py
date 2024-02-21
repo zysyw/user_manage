@@ -26,7 +26,7 @@ def process_data():
     try:
         dss_script = generate_dss_script(data)
     except ValueError as e:
-        return jsonify({"error": str(e)}), 422
+        return jsonify({"errors": str(e)}), 422
     new_process.opendss_script = dss_script
     new_process.save()
 
@@ -34,7 +34,7 @@ def process_data():
     try:
         run_opendss(dss_script, new_process)
     except NoConvergedError as e:
-        return jsonify({"error": e.message}), 422
+        return jsonify({"errors": e.message}), 422
     new_process.save()
 
     return jsonify({"result": "计算成功！"}), 200
